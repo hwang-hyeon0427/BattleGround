@@ -27,13 +27,14 @@ ABattleGroundMatchGameMode::ABattleGroundMatchGameMode()
 void ABattleGroundMatchGameMode::PreLogin(const FString& Options, const FString& Address,
     const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
 {
-    if (const TCHAR* Rejection = GetJoinRejection(Options))
-    {
-        ErrorMessage = Rejection;
-        FGameModeEvents::GameModePreLoginEvent.Broadcast(this, UniqueId, ErrorMessage);
-        return;
-    }
     Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
+    if (ErrorMessage.IsEmpty())
+    {
+        if (const TCHAR* Rejection = GetJoinRejection(Options))
+        {
+            ErrorMessage = Rejection;
+        }
+    }
 }
 
 APlayerController* ABattleGroundMatchGameMode::Login(UPlayer* NewPlayer, ENetRole RemoteRole,
