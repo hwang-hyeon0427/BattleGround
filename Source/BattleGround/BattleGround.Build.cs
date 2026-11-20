@@ -6,6 +6,6 @@ public class BattleGround : ModuleRules
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         PublicDependencyModuleNames.AddRange(new[] { "Core", "CoreUObject", "Engine" });
-        PrivateDependencyModuleNames.AddRange(new[] { "EnhancedInput", "InputCore", "Slate", "SlateCore", "UMG" });
+        PrivateDependencyModuleNames.AddRange(new[] { "EnhancedInput", "InputCore", "Slate", "SlateCore", "Sockets", "UMG" });
     }
 }
