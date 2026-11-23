@@ -43,11 +43,11 @@ void ABattleGroundCombatController::OnPossess(APawn* InPawn)
 {
     Super::OnPossess(InPawn);
 
-    if (ACharacter* Character = Cast<ACharacter>(GetPawn()))
+    if (ACharacter* PossessedCharacter = Cast<ACharacter>(GetPawn()))
     {
         // Multiplayer health belongs to the match, including for the legacy Blueprint pawn.
-        Character->SetCanBeDamaged(false);
-        Character->GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+        PossessedCharacter->SetCanBeDamaged(false);
+        PossessedCharacter->GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
         NextShotTime = 0.0;
     }
 }
@@ -80,8 +80,8 @@ void ABattleGroundCombatController::SetupInputComponent()
 
 void ABattleGroundCombatController::BuildInputStack(TArray<UInputComponent*>& InputStack)
 {
-    const APawn* Pawn = GetPawn();
-    UEnhancedInputComponent* PawnInput = Pawn ? Cast<UEnhancedInputComponent>(Pawn->InputComponent) : nullptr;
+    const APawn* ControlledPawn = GetPawn();
+    UEnhancedInputComponent* PawnInput = ControlledPawn ? Cast<UEnhancedInputComponent>(ControlledPawn->InputComponent) : nullptr;
     if (AttackAction && PawnInput && UpdatedPawnInput.Get() != PawnInput)
     {
         // The pawn still provides movement, aiming and camera controls from its Blueprint.
@@ -110,10 +110,10 @@ void ABattleGroundCombatController::ToggleMatchMenu()
 void ABattleGroundCombatController::OnAttackPressed()
 {
     const ABattleGroundMatchHUD* MatchHUD = GetHUD<ABattleGroundMatchHUD>();
-    const APawn* Pawn = GetPawn();
+    const APawn* ControlledPawn = GetPawn();
     UWorld* World = GetWorld();
     const ABattleGroundMatchState* MatchState = World ? World->GetGameState<ABattleGroundMatchState>() : nullptr;
-    if (!Pawn || !MatchState || MatchState->GetPhase() != EBattleGroundMatchPhase::Playing ||
+    if (!ControlledPawn || !MatchState || MatchState->GetPhase() != EBattleGroundMatchPhase::Playing ||
         (MatchHUD && MatchHUD->IsMenuOpen()))
     {
         return;
@@ -125,7 +125,7 @@ void ABattleGroundCombatController::OnAttackPressed()
 
     // Align the intent with the local reticle for both camera views. The server traces again from the pawn.
     const FVector CameraEnd = CameraLocation + CameraRotation.Vector() * ShotRange;
-    const FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(DuelReticle), false, Pawn);
+    const FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(DuelReticle), false, ControlledPawn);
     FHitResult Hit;
     const bool bHitGeometry = World->LineTraceSingleByChannel(Hit, CameraLocation, CameraEnd, ECC_Visibility, QueryParams);
     FVector AimPoint = bHitGeometry ? Hit.ImpactPoint : CameraEnd;
@@ -138,7 +138,7 @@ void ABattleGroundCombatController::OnAttackPressed()
     }
 
     const FVector ControlDirection = GetControlRotation().Vector();
-    const FVector ReticleDirection = (AimPoint - Pawn->GetPawnViewLocation()).GetSafeNormal();
+    const FVector ReticleDirection = (AimPoint - ControlledPawn->GetPawnViewLocation()).GetSafeNormal();
     const FVector AimDirection = (ReticleDirection | ControlDirection) >= MinimumAimAlignment
         ? ReticleDirection
         : ControlDirection;
