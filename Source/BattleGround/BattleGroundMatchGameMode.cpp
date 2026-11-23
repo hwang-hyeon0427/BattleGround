@@ -17,10 +17,10 @@ ABattleGroundMatchGameMode::ABattleGroundMatchGameMode()
     GameStateClass = ABattleGroundMatchState::StaticClass();
     HUDClass = ABattleGroundMatchHUD::StaticClass();
 
-    static const ConstructorHelpers::FClassFinder<APawn> Character(TEXT("/Game/Blueprint/BP_Character"));
-    if (Character.Succeeded())
+    static ConstructorHelpers::FClassFinder<APawn> CharacterFinder(TEXT("/Game/Blueprint/BP_Character"));
+    if (CharacterFinder.Succeeded())
     {
-        DefaultPawnClass = Character.Class;
+        DefaultPawnClass = CharacterFinder.Class;
     }
 }
 
@@ -37,7 +37,7 @@ void ABattleGroundMatchGameMode::PreLogin(const FString& Options, const FString&
     }
 }
 
-APlayerController* ABattleGroundMatchGameMode::Login(UPlayer* NewPlayer, ENetRole RemoteRole,
+APlayerController* ABattleGroundMatchGameMode::Login(UPlayer* NewPlayer, ENetRole InRemoteRole,
     const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
 {
     // Multiple handshakes can pass PreLogin before any of them claims the final seat.
@@ -47,7 +47,7 @@ APlayerController* ABattleGroundMatchGameMode::Login(UPlayer* NewPlayer, ENetRol
         return nullptr;
     }
 
-    APlayerController* Controller = Super::Login(NewPlayer, RemoteRole, Portal, Options, UniqueId, ErrorMessage);
+    APlayerController* Controller = Super::Login(NewPlayer, InRemoteRole, Portal, Options, UniqueId, ErrorMessage);
     if (!Controller)
     {
         return nullptr;
